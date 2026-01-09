@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="star-field">
+            <% for(let i = 0; i < 100; i++) { %>
+                <div class="star" style="left: <%= Math.floor(Math.random() * 100) %>%; top: <%= Math.floor(Math.random() * 100) %>%; animation-delay: <%= (Math.random() * 3).toFixed(1) %>s;"></div>
+            <% } %>
+        </div>
+        <div class="nebula nebula-1"></div>
+        <div class="nebula nebula-2"></div>
+        <div class="nebula nebula-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <i class="fas fa-atom"></i>
+                <span>BookVerse</span>
+            </a>
+            
+            <div class="nav-menu" id="nav-menu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="/books" class="nav-link">
+                    <i class="fas fa-book"></i>
+                    <span>Explore</span>
+                </a>
+                <a href="/ai-finder" class="nav-link ai-link">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Finder</span>
+                </a>
+                
+                <% if (user) { %>
+                    <a href="/profile" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                    <form action="/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="nav-link logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                <% } else { %>
+                    <a href="/login" class="nav-link">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    <a href="/register" class="nav-link register-btn">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Register</span>
+                    </a>
+                <% } %>
+            </div>
+            
+            <div class="nav-toggle" id="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Results Header -->
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h1 style="font-family: 'Orbitron', monospace; font-size: 3rem; margin-bottom: 1rem; background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                    <i class="fas fa-magic" style="margin-right: 1rem;"></i>
+                    Your AI Recommendations
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 1.2rem;">
+                    Based on: "<em style="color: var(--neon-blue);"><%= query.description %></em>"
+                </p>
+            </div>
+
+            <!-- Query Summary -->
+            <div style="background: var(--card-bg); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 3rem; text-align: center;">
+                <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+                    <% if (query.genre && query.genre !== 'any') { %>
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-tags" style="color: var(--neon-blue); margin-right: 0.5rem;"></i>
+                            Genre: <strong style="color: var(--text-primary);"><%= query.genre %></strong>
+                        </div>
+                    <% } %>
+                    <% if (query.mood) { %>
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-heart" style="color: var(--neon-pink); margin-right: 0.5rem;"></i>
+                            Mood: <strong style="color: var(--text-primary);"><%= query.mood %></strong>
+                        </div>
+                    <% } %>
+                    <% if (query.themes) { %>
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-lightbulb" style="color: var(--neon-orange); margin-right: 0.5rem;"></i>
+                            Themes: <strong style="color: var(--text-primary);"><%= query.themes %></strong>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <% if (recommendations.length > 0) { %>
+                <div style="margin-bottom: 2rem; text-align: center;">
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                        Found <strong style="color: var(--neon-green);"><%= recommendations.length %></strong> perfect matches for you!
+                    </p>
+                </div>
+
+                <div class="books-grid">
+                    <% recommendations.forEach((book, index) => { %>
+                        <div class="book-card" style="animation: fadeInUp 0.6s ease forwards; animation-delay: <%= index * 0.1 %>s;">
+                            <a href="/books/<%= book._id %>" style="text-decoration: none; color: inherit;">
+                                <img src="<%= book.coverImage %>" alt="<%= book.title %>" class="book-cover">
+                                <div class="book-info">
+                                    <h3 class="book-title"><%= book.title %></h3>
+                                    <p class="book-author">by <%= book.author %></p>
+                                    <div class="book-genres">
+                                        <% book.genre.slice(0, 2).forEach(g => { %>
+                                            <span class="genre-tag"><%= g %></span>
+                                        <% }) %>
+                                    </div>
+                                    <div class="book-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span><%= book.averageRating %></span>
+                                        <span style="color: var(--text-muted);">(<%= book.ratingsCount %>)</span>
+                                    </div>
+                                    <div class="book-meta">
+                                        <span><%= book.pages %> pages</span>
+                                        <span><%= book.publishedYear %></span>
+                                    </div>
+                                    <% if (book.matchScore) { %>
+                                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(0, 255, 136, 0.1); border-radius: var(--radius-sm); text-align: center;">
+                                            <strong style="color: var(--neon-green);">
+                                                <%= Math.round(book.matchScore * 100) %>% Match
+                                            </strong>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </a>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <div style="text-align: center; padding: 4rem; background: var(--card-bg); border-radius: var(--radius-xl); border: 1px solid rgba(255, 0, 110, 0.2);">
+                    <i class="fas fa-search" style="font-size: 4rem; color: var(--text-muted); margin-bottom: 2rem;"></i>
+                    <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 2rem;">No Perfect Matches Found</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem;">
+                        Try adjusting your description or being more specific about what you're looking for.
+                    </p>
+                    <a href="/ai-finder" class="btn btn-primary">
+                        <i class="fas fa-redo"></i>
+                        Try Again
+                    </a>
+                </div>
+            <% } %>
+
+            <!-- Action Buttons -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="/ai-finder" class="btn btn-outline" style="margin-right: 1rem;">
+                    <i class="fas fa-redo"></i>
+                    New Search
+                </a>
+                <a href="/books" class="btn btn-secondary">
+                    <i class="fas fa-book"></i>
+                    Browse All Books
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-atom"></i> BookVerse</h3>
+                    <p>Discover your next great read with AI-powered recommendations in the digital age.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Explore</h4>
+                    <ul>
+                        <li><a href="/books">All Books</a></li>
+                        <li><a href="/ai-finder">AI Finder</a></li>
+                        <li><a href="/books?genre=Science Fiction">Sci-Fi</a></li>
+                        <li><a href="/books?genre=Fantasy">Fantasy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BookVerse. All rights reserved. | Powered by AI</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</body>
+</html>
